@@ -12,6 +12,8 @@ func Prompt() {
 	reader := bufio.NewReader(os.Stdin)
 	for {
 		fmt.Print("> ")
+		execcmd.ExecHost()
+
 		// Read the keyboad input.
 		input, err := reader.ReadString('\n')
 		if err != nil {

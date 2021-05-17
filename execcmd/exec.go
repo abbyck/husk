@@ -2,6 +2,7 @@ package execcmd
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 	"strings"
@@ -37,4 +38,11 @@ func ExecInput(input string) error {
 	// Execute the command and return the error.
 	return cmd.Run()
 
+}
+
+func ExecHost() {
+	output, err := os.Hostname()
+	if err == nil {
+		fmt.Println(output)
+	}
 }
