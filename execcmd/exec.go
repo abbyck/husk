@@ -40,9 +40,19 @@ func ExecInput(input string) error {
 
 }
 
-func ExecHost() {
+func FindHost() string {
 	output, err := os.Hostname()
-	if err == nil {
-		fmt.Println(output)
+	if err != nil {
+		fmt.Println(err)
 	}
+	return output
+}
+
+func FindPath() string {
+	directory, err := os.Getwd()
+	if err != nil {
+		fmt.Println(err)
+	}
+	split := strings.Split(directory, "/")
+	return split[len(split)-1]
 }

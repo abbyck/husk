@@ -11,8 +11,7 @@ import (
 func Prompt() {
 	reader := bufio.NewReader(os.Stdin)
 	for {
-		fmt.Print("> ")
-		execcmd.ExecHost()
+		fmt.Printf("[user@%s %s]$ ", execcmd.FindHost(), execcmd.FindPath())
 
 		// Read the keyboad input.
 		input, err := reader.ReadString('\n')
