@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/abbyck/husk/execcmd"
 )
@@ -11,7 +12,9 @@ import (
 func Prompt() {
 	reader := bufio.NewReader(os.Stdin)
 	for {
-		fmt.Print("> ")
+		directory := strings.Split(execcmd.FindPath(), "/")
+		fmt.Printf("[%s@%s %s]$ ", execcmd.FindUser(), execcmd.FindHost(), directory[len(directory)-1])
+
 		// Read the keyboad input.
 		input, err := reader.ReadString('\n')
 		if err != nil {
@@ -22,5 +25,4 @@ func Prompt() {
 			fmt.Fprintln(os.Stderr, err)
 		}
 	}
-
 }

@@ -2,8 +2,10 @@ package execcmd
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"os/exec"
+	"os/user"
 	"strings"
 )
 
@@ -36,5 +38,29 @@ func ExecInput(input string) error {
 
 	// Execute the command and return the error.
 	return cmd.Run()
+}
 
+func FindHost() string {
+	host, err := os.Hostname()
+	if err != nil {
+		fmt.Println(err)
+	}
+	return host
+}
+
+func FindPath() string {
+	directory, err := os.Getwd()
+	if err != nil {
+		fmt.Println(err)
+	}
+	split := strings.Split(directory, "/")
+	return split[len(split)-1]
+}
+
+func FindUser() string {
+	user, err := user.Current()
+	if err != nil {
+		fmt.Println(err)
+	}
+	return user.Username
 }
