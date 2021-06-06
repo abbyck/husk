@@ -35,6 +35,7 @@ func ExecInput(input string) error {
 	// Set the correct output device.
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
+	cmd.Stdin = os.Stdin
 
 	// Execute the command and return the error.
 	return cmd.Run()
