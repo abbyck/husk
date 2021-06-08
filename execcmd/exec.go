@@ -1,67 +1,54 @@
 package execcmd
 
 import (
+	"bytes"
 	"errors"
-	"fmt"
+	"io"
+	"log"
 	"os"
 	"os/exec"
-	"os/user"
 	"strings"
 )
 
-func ExecInput(input string) error {
-	// Remove the newline character.
-	input = strings.TrimSuffix(input, "\n")
+func ExecInput(output_buffer *bytes.Buffer, input []string) (err error) {
+	var error_buffer bytes.Buffer
+	pipe_stack := make([]*io.PipeWriter, len(input)-1)
+	buffer := []*exec.Cmd{}
+	i := 0
 
-	// Split the input to separate the command and the arguments.
-	args := strings.Split(input, " ")
+	for j := 0; j < len(input); j++ {
+		args := strings.Split(input[j], " ")
 
-	// Check for built-in commands.
-	switch args[0] {
-	case "cd":
-		// 'cd' to home dir with empty path not yet supported.
-		if len(args) < 2 {
-			return errors.New("path required")
+		// Check for built-in commands.
+		switch args[0] {
+		case "cd":
+			// 'cd' to home dir with empty path not yet supported.
+			if len(args) < 2 {
+				return errors.New("path required")
+			}
+			// Change the directory and return the error.
+			return os.Chdir(args[1])
+		case "exit":
+			os.Exit(0)
 		}
-		// Change the directory and return the error.
-		return os.Chdir(args[1])
-	case "exit":
-		os.Exit(0)
+
+		cmd := exec.Command(args[0], args[1:]...)
+
+		buffer = append(buffer, cmd)
 	}
 
-	// Pass the program and the arguments separately.
-	cmd := exec.Command(args[0], args[1:]...)
-
-	// Set the correct output device.
-	cmd.Stderr = os.Stderr
-	cmd.Stdout = os.Stdout
-	cmd.Stdin = os.Stdin
-
-	// Execute the command and return the error.
-	return cmd.Run()
-}
-
-func FindHost() string {
-	host, err := os.Hostname()
-	if err != nil {
-		fmt.Println(err)
+	for ; i < len(input)-1; i++ {
+		stdin_pipe, stdout_pipe := io.Pipe()
+		buffer[i].Stdout = stdout_pipe
+		buffer[i].Stderr = &error_buffer
+		buffer[i+1].Stdin = stdin_pipe
+		pipe_stack[i] = stdout_pipe
 	}
-	return host
-}
-
-func FindPath() string {
-	directory, err := os.Getwd()
-	if err != nil {
-		fmt.Println(err)
+	buffer[i].Stdout = os.Stdout
+	buffer[i].Stderr = &error_buffer
+	if err := Call(buffer, pipe_stack); err != nil {
+		log.Fatalln((error_buffer.String()), err)
 	}
-	split := strings.Split(directory, "/")
-	return split[len(split)-1]
-}
 
-func FindUser() string {
-	user, err := user.Current()
-	if err != nil {
-		fmt.Println(err)
-	}
-	return user.Username
+	return err
 }
